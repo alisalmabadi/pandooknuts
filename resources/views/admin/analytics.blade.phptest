@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>آنالیز بازدید | پندوک</title>
+    @include('admin.includes.headerLinks')
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+@include('admin.includes.header')
+<!-- right side column. contains the logo and sidebar -->
+@include('admin.includes.aside')
+
+<!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                آنالیز بازدید امروز
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i> خانه</a></li>
+                <li class="active">آنالیز بازدید امروز</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="col-lg-12 mt-10 connectedSortable" style="margin-top: 20px">
+            <div class="box box-solid bg-gray">
+                <div class="box-header">
+                    <!-- tools box -->
+                    <div class="pull-left box-tools">
+                        <button type="button" class="btn btn-primary btn-sm pull-left" data-widget="collapse"
+                                data-toggle="tooltip" title="Collapse" style="margin-left: 5px;">
+                            <i class="fa fa-minus"></i></button>
+                    </div>
+                    <!-- /. tools -->
+
+                    <i class="fa fa-map-marker"></i>
+
+                    <h3 class="box-title">
+                        تفکیک منبع بازدید ها امروز
+                    </h3>
+
+                </div>
+
+
+                <div class="box-body">
+                    @php
+                        $url_array=array();
+                        $counter=1;
+                    @endphp
+                    @foreach($view_trackers as $track)
+                        @if(!in_array($track->route,$url_array))
+                            @php array_push($url_array,$track->route); @endphp
+                        @endif
+                    @endforeach
+
+
+                    <table class="table table-bordered table-responsive">
+                        <tr>
+                            <th style="width: 10px">#</th>
+                            <th>آدرس</th>
+                            <th>تعداد بازدید از گوگل</th>
+                            <th>تعداد بازدید از ارس</th>
+                            <th>تعداد بازدید از سایر</th>
+                        </tr>
+                        @foreach($url_array as $url)
+                            @php
+                                $ip_array=array();
+                                $arascount=0;
+                                $googlecount=0;
+                                $etccount=0;
+                                $date = date('d-m-Y');
+                                $track=\App\viewTracker::where('route',$url)->where('visited_date',$date)->where('is_robot',0)->paginate(999994499970955199);
+                            @endphp
+                            @foreach($track as $view)
+                                @if($view->is_robot==0 && !in_array(($view->user_ip.$view->visited_date),$ip_array))
+                                    @if(strpos($view->referral_route, 'arastowel.com') !== false)
+                                        @php $arascount++ @endphp
+                                    @elseif(strpos($view->referral_route, 'google.com') !== false)
+                                        @php $googlecount++ @endphp
+                                    @else
+                                        @php $etccount++ @endphp
+                                    @endif
+                                    @php
+                                        array_push($ip_array,($view->user_ip.$view->visited_date));
+                                    @endphp
+                                @endif
+                            @endforeach
+
+                            <tr>
+                                <td>{{$counter}}</td>
+                                <td><a target="_blank" href="/roza-admin/analytics/{{str_replace('/','-+',$url)}}">{{$url}} </a></td>
+                                <td>{{$googlecount}}</td>
+                                <td>{{$arascount}}</td>
+                                <td>{{$etccount}}</td>
+                            </tr>
+                            @php
+                                $counter=$counter+1;
+                            @endphp
+                        @endforeach
+
+
+                    </table>
+                </div>
+                <div class="box-footer">
+                    <h4 class="box-title">
+                        برای جزئیات روی آدرس کلیک کنید
+                    </h4>
+                </div>
+            </div>
+        </section>
+
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+@include('admin.includes.footer')
+
+<!-- /.control-sidebar -->
+    <!-- Add the sidebar's background. This div must be placed
+         immediately after the control sidebar -->
+    <div class="control-sidebar-bg"></div>
+</div>
+<!-- ./wrapper -->
+@include('admin.includes.footerLinks')
+
+</body>
+</html>
